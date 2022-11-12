@@ -1,0 +1,94 @@
+{% extends 'pages/layout.html' %}
+{% block body %}
+<div id="page-wrapper">
+    <div class="row">
+        <div class="col-lg-12">
+            <h1 class="page-header">Editar producto</h1>
+            {% include 'includes/_flashmsg.html' %}
+        </div>
+        <!-- /.col-lg-12 -->
+    </div>
+    <!-- /.row -->
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    <div class="row">
+                        <div class="col-lg-6">
+                            {% for product in product%}
+                            <form role="form" enctype=multipart/form-data class="" action="/edit_product?id={{product.id}}"
+                                  method="post">
+                                <div class="form-group">
+                                    <label>Producto</label>
+                                    <input class="form-control" required="required" name="name" value="{{product.pName}}" placeholder="Ingresa nombre">
+                                </div>
+                                <div class="form-group">
+                                    <label>Precio</label>
+                                    <input class="form-control" required="required" name="price" value="{{product.price}}" placeholder="Ingresa precio">
+                                </div>
+                                <div class="form-group">
+                                    <label>Descripción</label>
+                                    <textarea class="form-control" required="required" name="description" rows="3"
+                                              placeholder="Ingresa una descripción del producto">{{product.description}}</textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label>Existencia</label>
+                                    <input class="form-control" required="required" value="{{product.available}}" name="available" placeholder="Existencia">
+                                </div>
+                                <div class="form-group">
+                                    <label>Categoría</label>
+                                    <select class="form-control" id="category_id" onchange="populateList();"
+                                            name="category">
+                                        {% if product.category == 'celulares' %}
+                                        <option value="celulares" selected>Celulares</option>
+                                        {% else %}
+                                        <option value="celulares">Celulares</option>
+                                        {% endif %}
+                                        {% if product.category == 'computo' %}
+                                        <option value="computo" selected>Cómputo</option>
+                                        {% else %}
+                                        <option value="computo">Cómputo</option>
+                                        {% endif %}
+                                        {% if product.category == 'perifericos' %}
+                                        <option value="perifericos" selected>Periféricos</option>
+                                        {% else %}
+                                        <option value="perifericos">Periféricos</option>
+                                        {% endif %}
+                                        {% if product.category == 'accesorios' %}
+                                        <option value="accesorios" selected>Accesorios</option>
+                                        {% else %}
+                                        <option value="accesorios">Accesorios</option>
+                                        {% endif %}
+                                    </select>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label>Articulo</label>
+                                    <input class="form-control" required="required" name="item" value="{{product.item}}" placeholder="Ex: celulares/cómpito">
+                                </div>
+                                <div class="form-group">
+                                    <label>Código del producto</label>
+                                    <input class="form-control" required="required" value="{{product.pCode}}" name="code" placeholder="Ingresa código">
+                                </div>
+                                <div class="form-group">
+                                    <label>Imagen</label>
+                                    <input type="file" name="picture">
+                                </div>
+                                <button type="submit" class="btn btn-default">Editar</button>
+                            </form>
+                            {% endfor %}
+                        </div>
+                        <!-- /.col-lg-6 (nested) -->
+                    </div>
+                    <!-- /.row (nested) -->
+                </div>
+                <!-- /.panel-body -->
+            </div>
+            <!-- /.panel -->
+        </div>
+        <!-- /.col-lg-12 -->
+    </div>
+    <!-- /.row -->
+</div>
+<!-- /#page-wrapper -->
+{% endblock %}

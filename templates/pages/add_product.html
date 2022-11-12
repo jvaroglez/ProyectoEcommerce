@@ -1,0 +1,76 @@
+{% extends 'pages/layout.html' %}
+{% block body %}
+<div id="page-wrapper">
+    <div class="row">
+        <div class="col-lg-12">
+            <h1 class="page-header">Agregar producto</h1>
+            {% include 'includes/_flashmsg.html' %}
+        </div>
+        <!-- /.col-lg-12 -->
+    </div>
+    <!-- /.row -->
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <form role="form" enctype=multipart/form-data class="" action="/admin_add_product"
+                                  method="post">
+                                <div class="form-group">
+                                    <label>Producto</label>
+                                    <input class="form-control" required="required" name="name" placeholder="Ingresa el producto">
+                                </div>
+                                <div class="form-group">
+                                    <label>Precio</label>
+                                    <input class="form-control" required="required" name="price" placeholder="Ingresa el precio">
+                                </div>
+                                <div class="form-group">
+                                    <label>Descripción</label>
+                                    <textarea class="form-control" required="required" name="description" rows="3"
+                                              placeholder="Ingresa descripción del producto"></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label>Existencia</label>
+                                    <input class="form-control" required="required" name="available" placeholder="Disponibilidad">
+                                </div>
+                                <div class="form-group">
+                                    <label>Categoria</label>
+                                    <select class="form-control" id="category_id" onchange="populateList();"
+                                            name="category">
+                                        <option value="celulares">Celulares</option>
+                                        <option value="computo">Cómputo</option>
+                                        <option value="perifericos">Periféricos</option>
+                                        <option value="accesorios">Accesorios</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label>Articulo</label>
+                                    <input class="form-control" required="required" name="item" placeholder="Ex: celular/cómputo">
+                                </div>
+                                <div class="form-group">
+                                    <label>Codigo del producto</label>
+                                    <input class="form-control" required="required" name="code" placeholder="Ingresa código">
+                                </div>
+                                <div class="form-group">
+                                    <label>Agregar imagen</label>
+                                    <input type="file" required="required" name="picture">
+                                </div>
+                                <button type="submit" class="btn btn-default">Agregar</button>
+                            </form>
+                        </div>
+                        <!-- /.col-lg-6 (nested) -->
+                    </div>
+                    <!-- /.row (nested) -->
+                </div>
+                <!-- /.panel-body -->
+            </div>
+            <!-- /.panel -->
+        </div>
+        <!-- /.col-lg-12 -->
+    </div>
+    <!-- /.row -->
+</div>
+<!-- /#page-wrapper -->
+{% endblock %}
