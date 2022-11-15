@@ -99,9 +99,7 @@
                                         <th>Descripción</th>
                                         <th>Existencia</th>
                                         <th>Categoría</th>
-                                        <th>Artículo</th>
-                                        <th>Código</th>
-                                        <th>Imagen</th>
+                                        <th colspan="2" style="text-align: center;">Acciones</th>
                                     </tr>
                                     </thead>
                                     <tbody>
@@ -113,12 +111,19 @@
                                         <td>{{product.description}}</td>
                                         <td>{{product.available}}</td>
                                         <td>{{product.category}}</td>
-                                        <td>{{product.item}}</td>
-                                        <td>{{product.pCode}}</td>
                                         <td>
                                             <a href="/edit_product?id={{product.id}}">
                                                 <div class="">
-                                                    <span class="">Edit</span>
+                                                    <span class="">Editar</span>
+                                                    <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+                                                    <div class="clearfix"></div>
+                                                </div>
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <a href="/edit_product?id={{product.id}}" style="color: red;">
+                                                <div class="">
+                                                    <span class="">Eliminar</span>
                                                     <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
                                                     <div class="clearfix"></div>
                                                 </div>
