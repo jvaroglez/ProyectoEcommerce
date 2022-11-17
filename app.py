@@ -4,7 +4,6 @@ from wtforms import Form, StringField, TextAreaField, PasswordField, validators,
 from passlib.hash import sha256_crypt
 from functools import wraps
 from flask_uploads import UploadSet, configure_uploads, IMAGES
-#from werkzeug import secure_filename, FileStorage
 import timeit
 import datetime
 from flask_mail import Mail, Message
@@ -612,10 +611,11 @@ def edit_product():
                         if save_photo:
                             # Create Cursor
                             cur = mysql.connection.cursor()
-                            exe = curso.execute(
+                            exe = cur.execute(
                                 "UPDATE products SET pName=%s, price=%s, description=%s, available=%s, category=%s, picture=%s WHERE id=%s",
                                 (name, price, description, available, category, picture, product_id))
                             if exe:
+                                mysql.connection.commit();
                                 flash('Product updated', 'success')
                                 return redirect(url_for('edit_product'))
                             else:
