@@ -244,7 +244,7 @@ def celulares():
     products = cur.fetchall()
     # Close Connection
     cur.close()
-
+    
     if request.method == 'POST' and form.validate():
         name = form.name.data
         mobile = form.mobile_num.data
@@ -461,7 +461,6 @@ def accesorios():
         return render_template('order_product.html', x=x, celulares=product, form=form)
     return render_template('accesorios.html', accesorios=products, form=form)
 
-
 @app.route('/admin_login', methods=['GET', 'POST'])
 @not_admin_logged_in
 def admin_login():
@@ -503,14 +502,12 @@ def admin_login():
             return render_template('pages/login.html')
     return render_template('pages/login.html')
 
-
 @app.route('/admin_out')
 def admin_logout():
     if 'admin_logged_in' in session:
         session.clear()
         return redirect(url_for('admin_login'))
     return redirect(url_for('admin'))
-
 
 @app.route('/admin')
 @is_admin_logged_in
@@ -522,7 +519,6 @@ def admin():
     users_rows = curso.execute("SELECT * FROM users")
     return render_template('pages/index.html', result=result, row=num_rows, order_rows=order_rows,
                            users_rows=users_rows)
-
 
 @app.route('/orders')
 @is_admin_logged_in
@@ -556,11 +552,9 @@ def admin_add_product():
         price = request.form['price']
         description = request.form['description']
         available = request.form['available']
-        category = request.form['category']
-        item = request.form['item']
-        code = request.form['code']
+        category = request.form['category']        
         file = request.files['picture']
-        if name and price and description and available and category and item and code and file:
+        if name and price and description and available and category and file:
             pic = file.filename
             photo = pic.replace("'", "")
             picture = photo.replace(" ", "_")
@@ -569,12 +563,10 @@ def admin_add_product():
                 if save_photo:
                     # Create Cursor
                     curs = mysql.connection.cursor()
-                    curs.execute("INSERT INTO products(pName,price,description,available,category,item,pCode,picture)"
-                                 "VALUES(%s, %s, %s, %s, %s, %s, %s, %s)",
-                                 (name, price, description, available, category, item, code, picture))
+                    curs.execute("INSERT INTO products(pName,price,description,available,category,picture)"
+                                 "VALUES(%s, %s, %s, %s, %s, %s)",
+                                 (name, price, description, available, category, picture))
                     mysql.connection.commit()
-                    product_id = curs.lastrowid
-                    
                     # Close Connection
                     curs.close()
 
@@ -608,11 +600,9 @@ def edit_product():
                 description = request.form['description']
                 available = request.form['available']
                 category = request.form['category']
-                item = request.form['item']
-                code = request.form['code']
                 file = request.files['picture']
                 # Create Cursor
-                if name and price and description and available and category and item and code and file:
+                if name and price and description and available and category and file:
                     pic = file.filename
                     photo = pic.replace("'", "")
                     picture = photo.replace(" ", "")
@@ -623,8 +613,8 @@ def edit_product():
                             # Create Cursor
                             cur = mysql.connection.cursor()
                             exe = curso.execute(
-                                "UPDATE products SET pName=%s, price=%s, description=%s, available=%s, category=%s, item=%s, pCode=%s, picture=%s WHERE id=%s",
-                                (name, price, description, available, category, item, code, picture, product_id))
+                                "UPDATE products SET pName=%s, price=%s, description=%s, available=%s, category=%s, picture=%s WHERE id=%s",
+                                (name, price, description, available, category, picture, product_id))
                             if exe:
                                 flash('Product updated', 'success')
                                 return redirect(url_for('edit_product'))
@@ -647,6 +637,16 @@ def edit_product():
     else:
         return redirect(url_for('admin_login'))
 
+@app.route('/delete_product', methods=['POST', 'GET'])
+@is_admin_logged_in
+def delete_product():
+    if 'id' in request.args:
+        product_id = request.args['id']
+        curso = mysql.connection.cursor()
+        curso.execute("DELETE FROM products WHERE id=%s", (product_id,))
+        mysql.connection.commit();
+        flash('Producto borrado correctamente', 'success')
+        return redirect(url_for('admin'))
 
 @app.route('/search', methods=['POST', 'GET'])
 def search():
@@ -666,7 +666,6 @@ def search():
     else:
         flash('Search again', 'danger')
         return render_template('search.html')
-
 
 @app.route('/profile')
 @is_logged_in
@@ -739,31 +738,9 @@ def settings():
         flash('Unauthorised', 'danger')
         return redirect(url_for('login'))
 
-
 class DeveloperForm(Form):  #
     id = StringField('', [validators.length(min=1)],
                      render_kw={'placeholder': 'Input a product id...'})
-
-
-@app.route('/developer', methods=['POST', 'GET'])
-def developer():
-    form = DeveloperForm(request.form)
-    if request.method == 'POST' and form.validate():
-        q = form.id.data
-        curso = mysql.connection.cursor()
-        result = curso.execute("SELECT * FROM products WHERE id=%s", (q,))
-        if result > 0:
-            x = content_based_filtering(q)
-            wrappered = wrappers(content_based_filtering, q)
-            execution_time = timeit.timeit(wrappered, number=0)
-            seconds = ((execution_time / 1000) % 60)
-            return render_template('developer.html', form=form, x=x, execution_time=seconds)
-        else:
-            nothing = 'Nothing found'
-            return render_template('developer.html', form=form, nothing=nothing)
-    else:
-        return render_template('developer.html', form=form)
-
 
 if __name__ == '__main__':
     app.run(debug=True)
