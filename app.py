@@ -1,6 +1,6 @@
 from flask import Flask, render_template, flash, redirect, url_for, session, request, logging
 from flask_mysqldb import MySQL
-from wtforms import Form, StringField, TextAreaField, PasswordField, validators, SelectField, EmailField
+from wtforms import Form, StringField, TextAreaField, PasswordField, validators, SelectField
 from passlib.hash import sha256_crypt
 from functools import wraps
 from flask_uploads import UploadSet, configure_uploads, IMAGES
@@ -10,10 +10,12 @@ from flask_mail import Mail, Message
 import os
 from werkzeug.utils import secure_filename
 from werkzeug.datastructures import  FileStorage
+from wtforms.fields.html5 import EmailField
+
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
-app.config['UPLOADED_PHOTOS_DEST'] = 'static/image/product'
+app.config['UPLOADED_PHOTOS_DEST'] = 'ProyectoEcommerce/static/image/product'
 photos = UploadSet('photos', IMAGES)
 configure_uploads(app, photos)
 
@@ -118,7 +120,7 @@ class LoginForm(Form):  # Create Login Form
     username = StringField('', [validators.length(min=1)],
                            render_kw={'autofocus': True, 'placeholder': 'Username'})
     password = PasswordField('', [validators.length(min=3)],
-                             render_kw={'placeholder': 'Password'})
+                             render_kw={'placeholder': 'Contraseña'})
 
 
 # User Login
@@ -184,13 +186,14 @@ def logout():
 
 class RegisterForm(Form):
     name = StringField('', [validators.length(min=3, max=50)],
-                       render_kw={'autofocus': True, 'placeholder': 'Full Name'})
+                       render_kw={'autofocus': True, 'placeholder': 'Nombre completo'})
     username = StringField('', [validators.length(min=3, max=25)], render_kw={'placeholder': 'Username'})
     email = EmailField('', [validators.DataRequired(), validators.Email(), validators.length(min=4, max=25)],
                        render_kw={'placeholder': 'Email'})
     password = PasswordField('', [validators.length(min=3)],
-                             render_kw={'placeholder': 'Password'})
-    mobile = StringField('', [validators.length(min=11, max=15)], render_kw={'placeholder': 'Mobile'})
+                             render_kw={'placeholder': 'Contraseña'})
+    mobile = StringField('', [validators.length(min=11, max=15)], render_kw={'placeholder': 'Telefono'})
+    
 
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -223,13 +226,13 @@ def register():
 
 class OrderForm(Form):  # Create Order Form
     name = StringField('', [validators.length(min=1), validators.DataRequired()],
-                       render_kw={'autofocus': True, 'placeholder': 'Full Name'})
+                       render_kw={'autofocus': True, 'placeholder': 'Nombre completo'})
     mobile_num = StringField('', [validators.length(min=1), validators.DataRequired()],
-                             render_kw={'autofocus': True, 'placeholder': 'Mobile'})
+                             render_kw={'autofocus': True, 'placeholder': 'Numero'})
     quantity = SelectField('', [validators.DataRequired()],
                            choices=[('1', '1'), ('2', '2'), ('3', '3'), ('4', '4'), ('5', '5')])
     order_place = StringField('', [validators.length(min=1), validators.DataRequired()],
-                              render_kw={'placeholder': 'Order Place'})
+                              render_kw={'placeholder': 'Lugar del pedido'})
 
 
 @app.route('/celulares', methods=['GET', 'POST'])
@@ -460,6 +463,46 @@ def accesorios():
         return render_template('order_product.html', x=x, celulares=product, form=form)
     return render_template('accesorios.html', accesorios=products, form=form)
 
+class RegisterForm_Admin(Form):
+    firstName = StringField('', [validators.length(min=3, max=50)],
+                       render_kw={'autofocus': True, 'placeholder': 'Nombres'})
+    lastName = StringField('', [validators.length(min=3, max=50)],
+                       render_kw={'autofocus': True, 'placeholder': 'Apellidos'})
+    email = EmailField('', [validators.DataRequired(), validators.Email(), validators.length(min=4, max=25)],
+                       render_kw={'placeholder': 'Email'})
+    password = PasswordField('', [validators.length(min=3)],
+                             render_kw={'placeholder': 'Contraseña'})
+    mobile = StringField('', [validators.length(min=11, max=15)], render_kw={'placeholder': 'Telefono'})
+    address = StringField('', [validators.length(min=3, max=25)], render_kw={'placeholder': 'Dirección'})
+
+@app.route('/add', methods=['GET', 'POST'])
+@not_admin_logged_in
+def add():
+    form = RegisterForm_Admin(request.form)
+    if request.method == 'POST' and form.validate():
+        firstName = form.firstName.data
+        lastName = form.lastName.data
+        email = form.email.data
+        mobile = form.mobile.data
+        address = form.address.data
+        password = sha256_crypt.encrypt(str(form.password.data))
+
+        # Create Admin
+        cur = mysql.connection.cursor()
+        cur.execute("INSERT INTO admin(firstName, lastName, email, mobile, address, password) VALUES (%s, %s, %s, %s, %s, %s)",
+                    (firstName, lastName, email, mobile, address, password))
+
+        # Commit cursor
+        mysql.connection.commit()
+
+        # Close Connection
+        cur.close()
+
+        flash('Se ha creado un nuevo usuario administrador', 'Muy bien!')
+
+    return render_template('pages/admin_register.html', form=form)
+
+
 @app.route('/admin_login', methods=['GET', 'POST'])
 @not_admin_logged_in
 def admin_login():
@@ -500,6 +543,8 @@ def admin_login():
             cur.close()
             return render_template('pages/login.html')
     return render_template('pages/login.html')
+
+
 
 @app.route('/admin_out')
 def admin_logout():
@@ -692,13 +737,13 @@ def profile():
 
 
 class UpdateRegisterForm(Form):
-    name = StringField('Full Name', [validators.length(min=3, max=50)],
-                       render_kw={'autofocus': True, 'placeholder': 'Full Name'})
+    name = StringField('Nombre completo', [validators.length(min=3, max=50)],
+                       render_kw={'autofocus': True, 'placeholder': 'Nombre completo'})
     email = EmailField('Email', [validators.DataRequired(), validators.Email(), validators.length(min=4, max=25)],
                        render_kw={'placeholder': 'Email'})
-    password = PasswordField('Password', [validators.length(min=3)],
-                             render_kw={'placeholder': 'Password'})
-    mobile = StringField('Mobile', [validators.length(min=11, max=15)], render_kw={'placeholder': 'Mobile'})
+    password = PasswordField('Contraseña', [validators.length(min=3)],
+                             render_kw={'placeholder': 'Contraseña'})
+    mobile = StringField('Telefono', [validators.length(min=11, max=15)], render_kw={'placeholder': 'Telefono'})
 
 
 @app.route('/settings', methods=['POST', 'GET'])
