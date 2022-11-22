@@ -1,6 +1,6 @@
 from flask import Flask, render_template, flash, redirect, url_for, session, request, logging
 from flask_mysqldb import MySQL
-from wtforms import Form, StringField, TextAreaField, PasswordField, validators, SelectField
+from wtforms import Form, StringField, TextAreaField, PasswordField, validators, SelectField, EmailField
 from passlib.hash import sha256_crypt
 from functools import wraps
 from flask_uploads import UploadSet, configure_uploads, IMAGES
@@ -10,8 +10,6 @@ from flask_mail import Mail, Message
 import os
 from werkzeug.utils import secure_filename
 from werkzeug.datastructures import  FileStorage
-from wtforms.fields.html5 import EmailField
-
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
@@ -81,7 +79,6 @@ def wrappers(func, *args, **kwargs):
 
     return wrapped
 
-
 def content_based_filtering(product_id):
     cur = mysql.connection.cursor()
     cur.execute("SELECT * FROM products WHERE id=%s", (product_id,))  # getting id row
@@ -91,7 +88,6 @@ def content_based_filtering(product_id):
     category_matched = cur.execute("SELECT * FROM products WHERE category=%s", (data_cat,))  # get all shirt category
     print('Total product matched: ' + str(category_matched))
     return ''
-
 
 @app.route('/')
 def index():
@@ -223,7 +219,6 @@ def register():
         return redirect(url_for('index'))
     return render_template('register.html', form=form)
 
-
 class OrderForm(Form):  # Create Order Form
     name = StringField('', [validators.length(min=1), validators.DataRequired()],
                        render_kw={'autofocus': True, 'placeholder': 'Nombre completo'})
@@ -233,7 +228,6 @@ class OrderForm(Form):  # Create Order Form
                            choices=[('1', '1'), ('2', '2'), ('3', '3'), ('4', '4'), ('5', '5')])
     order_place = StringField('', [validators.length(min=1), validators.DataRequired()],
                               render_kw={'placeholder': 'Lugar del pedido'})
-
 
 @app.route('/celulares', methods=['GET', 'POST'])
 def celulares():
@@ -502,6 +496,11 @@ def add():
 
     return render_template('pages/admin_register.html', form=form)
 
+@app.route('/menu_vendedor', methods=['GET', 'POST'])
+@not_admin_logged_in
+def menu_vendedor():
+    return render_template('pages/menu_vendedor.html')
+
 
 @app.route('/admin_login', methods=['GET', 'POST'])
 @not_admin_logged_in
@@ -543,8 +542,6 @@ def admin_login():
             cur.close()
             return render_template('pages/login.html')
     return render_template('pages/login.html')
-
-
 
 @app.route('/admin_out')
 def admin_logout():
