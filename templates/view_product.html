@@ -30,6 +30,7 @@
                         <div class="card-body">
                             <h3 class="card-title">{{ product.pName}}</h3>
                             <h4>${{ product.price}}</h4>
+                            <p class="card-text">Stock: {{ product.available}}</p>
                             <p class="card-text">{{ product.description}}</p>
                             {% if session.logged_in %}
                             <a href="/{{product.category}}?order={{product.id}}" class="btn btn-success">Pedir ahora</a>

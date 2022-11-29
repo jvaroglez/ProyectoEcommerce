@@ -1,8 +1,10 @@
-{% extends 'layout.html' %}
+{% extends 'pages/layout.html' %}
 
 {% block body %}
-<div class="jumbotron">
-    <h2 style="text-align: center; color: #206aaa;">Regístrate como vendedor</h2>
+<div id="page-wrapper">
+    <div class="row">
+        <div class="col-lg-12">
+    <h1 class="page-header">Regístrate como vendedor</h1>
     {% from "includes/_formhelpers.html" import render_field %}
     <form method="POST" action="">
         <div class="form-group">
