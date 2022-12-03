@@ -22,7 +22,7 @@ mysql = MySQL()
 app.config['MYSQL_HOST'] = 'localhost'
 app.config['MYSQL_USER'] = 'root'
 app.config['MYSQL_PASSWORD'] = ''
-app.config['MYSQL_DB'] = 'menshut'
+app.config['MYSQL_DB'] = 'proyecto_ecommerce'
 app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
 
 # Initialize the app for use with this MySQL class
@@ -188,7 +188,7 @@ class RegisterForm(Form):
                        render_kw={'placeholder': 'Email'})
     password = PasswordField('', [validators.length(min=3)],
                              render_kw={'placeholder': 'Contraseña'})
-    mobile = StringField('', [validators.length(min=11, max=15)], render_kw={'placeholder': 'Telefono'})
+    mobile = StringField('', [validators.length(min=11, max=15)], render_kw={'placeholder': 'Teléfono'})
     
 
 
@@ -223,11 +223,11 @@ class OrderForm(Form):  # Create Order Form
     name = StringField('', [validators.length(min=1), validators.DataRequired()],
                        render_kw={'autofocus': True, 'placeholder': 'Nombre completo'})
     mobile_num = StringField('', [validators.length(min=1), validators.DataRequired()],
-                             render_kw={'autofocus': True, 'placeholder': 'Numero'})
+                             render_kw={'autofocus': True, 'placeholder': 'Número de teléfono'})
     quantity = SelectField('', [validators.DataRequired()],
                            choices=[('1', '1'), ('2', '2'), ('3', '3'), ('4', '4'), ('5', '5')])
     order_place = StringField('', [validators.length(min=1), validators.DataRequired()],
-                              render_kw={'placeholder': 'Lugar del pedido'})
+                              render_kw={'placeholder': 'Dirección'})
 
 @app.route('/celulares', methods=['GET', 'POST'])
 def celulares():
