@@ -17,7 +17,6 @@ app.config['UPLOADED_PHOTOS_DEST'] = 'ProyectoEcommerce/static/image/product'
 photos = UploadSet('photos', IMAGES)
 configure_uploads(app, photos)
 
-# Config MySQL
 mysql = MySQL()
 app.config['MYSQL_HOST'] = 'localhost'
 app.config['MYSQL_USER'] = 'root'
@@ -25,9 +24,7 @@ app.config['MYSQL_PASSWORD'] = ''
 app.config['MYSQL_DB'] = 'proyecto_ecommerce'
 app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
 
-# Initialize the app for use with this MySQL class
 mysql.init_app(app)
-
 
 def is_logged_in(f):
     @wraps(f)
@@ -81,20 +78,18 @@ def wrappers(func, *args, **kwargs):
 
 def content_based_filtering(product_id):
     cur = mysql.connection.cursor()
-    cur.execute("SELECT * FROM products WHERE id=%s", (product_id,))  # getting id row
-    data = cur.fetchone()  # get row info
-    data_cat = data['category']  # get id category ex shirt
+    cur.execute("SELECT * FROM products WHERE id=%s", (product_id,))
+    data = cur.fetchone()
+    data_cat = data['category']
     print('Showing result for Product Id: ' + product_id)
-    category_matched = cur.execute("SELECT * FROM products WHERE category=%s", (data_cat,))  # get all shirt category
+    category_matched = cur.execute("SELECT * FROM products WHERE category=%s", (data_cat,))
     print('Total product matched: ' + str(category_matched))
     return ''
 
 @app.route('/')
 def index():
     form = OrderForm(request.form)
-    # Create cursor
     cur = mysql.connection.cursor()
-    # Get message
     values = 'celulares'
     cur.execute("SELECT * FROM products WHERE category=%s ORDER BY RAND() LIMIT 4", (values,))
     celulares = cur.fetchall()
@@ -107,45 +102,35 @@ def index():
     values = 'accesorios'
     cur.execute("SELECT * FROM products WHERE category=%s ORDER BY RAND() LIMIT 4", (values,))
     accesorios = cur.fetchall()
-    # Close Connection
     cur.close()
     return render_template('home.html', celulares=celulares, computo=computo, perifericos=perifericos, accesorios=accesorios, form=form)
 
 
-class LoginForm(Form):  # Create Login Form
+class LoginForm(Form):
     username = StringField('', [validators.length(min=1)],
                            render_kw={'autofocus': True, 'placeholder': 'Username'})
     password = PasswordField('', [validators.length(min=3)],
                              render_kw={'placeholder': 'Contraseña'})
 
-
-# User Login
 @app.route('/login', methods=['GET', 'POST'])
 @not_logged_in
 def login():
     form = LoginForm(request.form)
     if request.method == 'POST' and form.validate():
-        # GEt user form
         username = form.username.data
-        # password_candidate = request.form['password']
         password_candidate = form.password.data
 
-        # Create cursor
         cur = mysql.connection.cursor()
 
-        # Get user by username
         result = cur.execute("SELECT * FROM users WHERE username=%s", [username])
 
         if result > 0:
-            # Get stored value
             data = cur.fetchone()
             password = data['password']
             uid = data['id']
             name = data['name']
 
-            # Compare password
             if sha256_crypt.verify(password_candidate, password):
-                # passed
                 session['logged_in'] = True
                 session['uid'] = uid
                 session['s_name'] = name
@@ -155,12 +140,11 @@ def login():
                 return redirect(url_for('index'))
 
             else:
-                flash('Incorrect password', 'danger')
+                flash('Contrase{a incorrecta', 'danger')
                 return render_template('login.html', form=form)
 
         else:
-            flash('Username not found', 'danger')
-            # Close connection
+            flash('Username no encontrado', 'danger')
             cur.close()
             return render_template('login.html', form=form)
     return render_template('login.html', form=form)
@@ -175,7 +159,7 @@ def logout():
         x = '0'
         cur.execute("UPDATE users SET online=%s WHERE id=%s", (x, uid))
         session.clear()
-        flash('You are logged out', 'success')
+        flash('Saliste de la sesión', 'success')
         return redirect(url_for('index'))
     return redirect(url_for('login'))
 
@@ -203,23 +187,20 @@ def register():
         password = sha256_crypt.encrypt(str(form.password.data))
         mobile = form.mobile.data
 
-        # Create Cursor
         cur = mysql.connection.cursor()
         cur.execute("INSERT INTO users(name, email, username, password, mobile) VALUES(%s, %s, %s, %s, %s)",
                     (name, email, username, password, mobile))
 
-        # Commit cursor
         mysql.connection.commit()
 
-        # Close Connection
         cur.close()
 
-        flash('You are now registered and can login', 'success')
+        flash('Estás registrado, ahora puedes cerrar sesión', 'success')
 
         return redirect(url_for('index'))
     return render_template('register.html', form=form)
 
-class OrderForm(Form):  # Create Order Form
+class OrderForm(Form): 
     name = StringField('', [validators.length(min=1), validators.DataRequired()],
                        render_kw={'autofocus': True, 'placeholder': 'Nombre completo'})
     mobile_num = StringField('', [validators.length(min=1), validators.DataRequired()],
@@ -232,13 +213,10 @@ class OrderForm(Form):  # Create Order Form
 @app.route('/celulares', methods=['GET', 'POST'])
 def celulares():
     form = OrderForm(request.form)
-    # Create cursor
     cur = mysql.connection.cursor()
-    # Get message
     values = 'celulares'
     cur.execute("SELECT * FROM products WHERE category=%s ORDER BY id ASC", (values,))
     products = cur.fetchall()
-    # Close Connection
     cur.close()
     
     if request.method == 'POST' and form.validate():
@@ -251,7 +229,6 @@ def celulares():
         week = datetime.timedelta(days=7)
         delivery_date = now + week
         now_time = delivery_date.strftime("%y-%m-%d %H:%M:%S")
-        # Create Cursor
         curs = mysql.connection.cursor()
         if 'uid' in session:
             uid = session['uid']
@@ -262,9 +239,7 @@ def celulares():
             curs.execute("INSERT INTO orders(pid, ofname, mobile, oplace, quantity, ddate) "
                          "VALUES(%s, %s, %s, %s, %s, %s)",
                          (pid, name, mobile, order_place, quantity, now_time))
-        # Commit cursor
         mysql.connection.commit()
-        # Close Connection
         cur.close()
 
         flash('Order successful', 'success')
@@ -324,7 +299,7 @@ def computo():
         # Close Connection
         cur.close()
 
-        flash('Order successful', 'success')
+        flash('Orden realizada', 'success')
         return render_template('computo.html', computo=products, form=form)
     if 'view' in request.args:
         q = request.args['view']
@@ -381,7 +356,7 @@ def perifericos():
         # Close Connection
         cur.close()
 
-        flash('Order successful', 'success')
+        flash('Orden realizada', 'success')
         return render_template('perifericos.html', perifericos=products, form=form)
     if 'view' in request.args:
         q = request.args['view']
@@ -533,11 +508,11 @@ def admin_login():
                 return redirect(url_for('admin'))
 
             else:
-                flash('Incorrect password', 'danger')
+                flash('Contraseña incorrecta', 'danger')
                 return render_template('pages/login.html')
 
         else:
-            flash('Username not found', 'danger')
+            flash('Username no encontrado', 'danger')
             # Close connection
             cur.close()
             return render_template('pages/login.html')
@@ -611,16 +586,16 @@ def admin_add_product():
                     # Close Connection
                     curs.close()
 
-                    flash('Product added successful', 'success')
+                    flash('Producto añadido', 'success')
                     return redirect(url_for('admin_add_product'))
                 else:
-                    flash('Picture not save', 'danger')
+                    flash('La foto no se guardó', 'danger')
                     return redirect(url_for('admin_add_product'))
             else:
-                flash('File not supported', 'danger')
+                flash('Archivo no soportado', 'danger')
                 return redirect(url_for('admin_add_product'))
         else:
-            flash('Please fill up all form', 'danger')
+            flash('Por favor, completa el formulario', 'danger')
             return redirect(url_for('admin_add_product'))
     else:
         return render_template('pages/add_product.html')
@@ -658,19 +633,19 @@ def edit_product():
                                 (name, price, description, available, category, picture, product_id))
                             if exe:
                                 mysql.connection.commit();
-                                flash('Product updated', 'success')
+                                flash('Producto actualizado', 'success')
                                 return redirect(url_for('edit_product'))
                             else:
-                                flash('Data updated', 'success')
+                                flash('Datos actualizados', 'success')
                                 return redirect(url_for('edit_product'))
                         else:
-                            flash('Pic not upload', 'danger')
+                            flash('Foto actualizada', 'danger')
                             return render_template('pages/edit_product.html', product=product)
                     else:
-                        flash('File not support', 'danger')
+                        flash('Archivo no soportado', 'danger')
                         return render_template('pages/edit_product.html', product=product)
                 else:
-                    flash('Fill all field', 'danger')
+                    flash('Por favor, llena todos los campos', 'danger')
                     return render_template('pages/edit_product.html', product=product)
             else:
                 return render_template('pages/edit_product.html', product=product)
@@ -703,10 +678,10 @@ def search():
         products = cur.fetchall()
         # Close Connection
         cur.close()
-        flash('Showing result for: ' + q, 'success')
+        flash('Resultados: ' + q, 'success')
         return render_template('search.html', products=products, form=form)
     else:
-        flash('Search again', 'danger')
+        flash('Buscar otra vez', 'danger')
         return render_template('search.html')
 
 @app.route('/profile')
@@ -723,13 +698,13 @@ def profile():
                 res = curso.fetchall()
                 return render_template('profile.html', result=res)
             else:
-                flash('Unauthorised', 'danger')
+                flash('No autorizado', 'danger')
                 return redirect(url_for('login'))
         else:
-            flash('Unauthorised! Please login', 'danger')
+            flash('No autorizado! Inicia sesión', 'danger')
             return redirect(url_for('login'))
     else:
-        flash('Unauthorised', 'danger')
+        flash('No autorizado', 'danger')
         return redirect(url_for('login'))
 
 
@@ -765,19 +740,19 @@ def settings():
                     exe = cur.execute("UPDATE users SET name=%s, email=%s, password=%s, mobile=%s WHERE id=%s",
                                       (name, email, password, mobile, q))
                     if exe:
-                        flash('Profile updated', 'success')
+                        flash('Perfil actualizado', 'success')
                         return render_template('user_settings.html', result=result, form=form)
                     else:
-                        flash('Profile not updated', 'danger')
+                        flash('Perfil no actualizado', 'danger')
                 return render_template('user_settings.html', result=result, form=form)
             else:
-                flash('Unauthorised', 'danger')
+                flash('No autorizado', 'danger')
                 return redirect(url_for('login'))
         else:
-            flash('Unauthorised! Please login', 'danger')
+            flash('No autorizado! Inicia sesión', 'danger')
             return redirect(url_for('login'))
     else:
-        flash('Unauthorised', 'danger')
+        flash('No autorizado', 'danger')
         return redirect(url_for('login'))
 
 class DeveloperForm(Form):  #
