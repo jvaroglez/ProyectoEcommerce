@@ -13,7 +13,7 @@ from werkzeug.datastructures import  FileStorage
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
-app.config['UPLOADED_PHOTOS_DEST'] = 'ProyectoEcommerce/static/image/product'
+app.config['UPLOADED_PHOTOS_DEST'] = 'static/image/product'
 photos = UploadSet('photos', IMAGES)
 configure_uploads(app, photos)
 
