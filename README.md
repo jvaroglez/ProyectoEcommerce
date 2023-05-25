@@ -1,4 +1,1 @@
-# ProyectoEcommerce
-Proyecto Ecommerce Python
-
-Ya casi acabamos iujuuuuuuuuuu
+Proyecto elaborado con Python y Flask como Framework
